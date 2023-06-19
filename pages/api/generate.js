@@ -29,7 +29,7 @@ export default async function (req, res) {
     const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: generateMessages(musicRequest),
-      temperature: 0.6,
+      temperature: 0.8,
       max_tokens: 1000
     });
     console.log("hello!!!!!!!!!!!!! again")
