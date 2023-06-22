@@ -5,16 +5,27 @@ import styles from "./index.module.css";
 export default function Home() {
   const [userInput, setUserInput] = useState("");
   const [result, setResult] = useState();
+  const [conversationHistory, setConversationHistory] = useState([]);
+
+  const updateConversationHistoryValue = (newConversationHistory) => {
+    if (conversationHistory.length > 10) {
+      newConversationHistory.shift()
+    }
+    setConversationHistory(newConversationHistory);
+  }
 
   async function onSubmit(event) {
     event.preventDefault();
     try {
+      let newConversationHistory = [...conversationHistory, userInput];
+      updateConversationHistoryValue(newConversationHistory);
+
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ musicRequest: userInput }),
+        body: JSON.stringify({ musicRequest: newConversationHistory.join('.') }),
       });
 
       const data = await response.json();

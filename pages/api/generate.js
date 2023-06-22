@@ -54,9 +54,5 @@ export default async function (req, res) {
 function generateMessages(musicRequest) {
   return [{
       "role": "user", 
-      content:`
-        I want you to give me a playlist of songs based on what I say.
-        ${musicRequest}. 
-        Respond in a parseable response.
-  `}];
+      content:`${musicRequest}`}];
 }
