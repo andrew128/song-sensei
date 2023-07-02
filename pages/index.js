@@ -1,25 +1,29 @@
 import Head from "next/head";
 import { useState } from "react";
 import styles from "./index.module.css";
-import { BufferWindowMemory } from "langchain/memory";
-import { ConversationChain } from "langchain/chains";
-import { OpenAI } from "langchain/llms/openai";
+import { ChatOpenAI } from "langchain/chat_models/openai";
+import { HumanChatMessage, SystemChatMessage } from "langchain/schema";
 
 export default function Home() {
   const [userInput, setUserInput] = useState("");
   const [result, setResult] = useState();
 
-  const model = new OpenAI({openAIApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, temperature: 0.8});
-  const memory = new BufferWindowMemory({ k: 100 });
-  const chain = new ConversationChain({ llm: model, memory: memory });
+  const chat = new ChatOpenAI({ openAIApiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY, temperature: 0 });
 
   async function onSubmit(event) {
     event.preventDefault();
     try {
-      const res = await chain.call({ input: userInput });
+      const res = await chat.call([
+        new SystemChatMessage(
+          "You are a helpful assistant that comes up with a playlist of songs." +
+          "You will give the playlist of songs in a numbered list." +
+          "If you can't interpret a message as a song request you will truthfully say you do not know."
+        ),
+        new HumanChatMessage(userInput),
+      ]);
       console.log({ res });
 
-      setResult(res.response);
+      setResult(res.text);
       setUserInput("");
     } catch(error) {
       console.error(error);
