@@ -1,6 +1,4 @@
 import React from "react";
-import axios from "axios";
-import queryString from "query-string";
 
 const redirectUri = "http://localhost:3000/";
 const scope = "playlist-modify-public";
