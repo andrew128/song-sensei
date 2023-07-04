@@ -1,6 +1,7 @@
 import Head from "next/head";
 import SpotifyAuth from "./components/SpotifyAuth";
 import SubmitRequest from "./components/SubmitRequest";
+import styles from "./index.module.css";
 
 export default function Home() {
   return (
