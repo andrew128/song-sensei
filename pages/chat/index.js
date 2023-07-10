@@ -9,7 +9,6 @@ const redirectUri = "http://localhost:3000/chat";
 
 function getResponseCode() {
   const urlParams = new URLSearchParams(window.location.search);
-  console.log(urlParams.get("code"));
   return urlParams.get("code");
 }
 
@@ -17,7 +16,6 @@ function getResponseCode() {
 // returns a list containing the items at each of the numbers.
 // It throws away
 function parseNumberedList(text) {
-  console.log(text);
   var lines = text.split("\n");
   var matches = [];
 
@@ -36,19 +34,32 @@ function parseNumberedList(text) {
 }
 
 async function getUserId() {
-  // Fetch user information from Spotify Web API
-  const response = await fetch("https://api.spotify.com/v1/me", {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (response.ok) {
-    const data = await response.json();
-    const userId = data.id;
-    console.log("Spotify User ID:", userId);
+  const userId = localStorage.getItem("userid");
+  if (userId !== null) {
+    // Item exists in localStorage
+    return userId;
   } else {
-    console.error("Error fetching user information:", response.status);
+    // Item does not exist in localStorage
+    // Fetch user information from Spotify Web API
+    await fetch("https://api.spotify.com/v1/me", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("HTTP status " + response.status);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("data", data);
+        localStorage.setItem("userid", data.id);
+        return data.id;
+      })
+      .catch((error) => {
+        console.error("Error fetching user information:", error);
+      });
   }
 }
 
@@ -63,8 +74,6 @@ const SubmitRequest = () => {
 
   // Whenever the SubmitRequest component is rendered this will fire.
   React.useEffect(() => {
-    console.log("inside of React.useEffect", getResponseCode());
-
     let codeVerifier = localStorage.getItem("code_verifier");
 
     let body = new URLSearchParams({
@@ -75,7 +84,7 @@ const SubmitRequest = () => {
       code_verifier: codeVerifier,
     });
 
-    const response = fetch("https://accounts.spotify.com/api/token", {
+    fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -89,7 +98,6 @@ const SubmitRequest = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("data.access_token", data.access_token);
         localStorage.setItem("access_token", data.access_token);
       })
       .catch((error) => {
@@ -109,12 +117,15 @@ const SubmitRequest = () => {
         ),
         new HumanChatMessage(userInput),
       ]);
-      console.log({ res });
 
-      // TODO: create playlist using spotify api and song list in res
+      //  Set the output text
+      setResult(res.text);
+      setUserInput("");
 
-      // Get used id
-      // getUserId();
+      // Ensure user id is in local storage
+      await getUserId();
+      const userId = localStorage.getItem("userid");
+      console.log("userId", userId);
 
       // Create playlist
 
@@ -123,9 +134,6 @@ const SubmitRequest = () => {
       console.log("numberedItems" + numberedItems);
 
       // Find songs and add them to the playlist
-
-      setResult(res.text);
-      setUserInput("");
     } catch (error) {
       console.error(error);
       alert(error.message);

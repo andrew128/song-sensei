@@ -55,8 +55,6 @@ export default function Home() {
           code_challenge: codeChallenge,
         });
 
-        console.log("args", args);
-
         window.location.href = `${authorizationEndpoint}?${args}`;
       })
       .catch((error) => {
