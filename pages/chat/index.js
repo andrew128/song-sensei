@@ -63,6 +63,35 @@ async function getUserId() {
   }
 }
 
+async function createPlaylist() {
+  const userId = localStorage.getItem("userid");
+  const url = `https://api.spotify.com/v1/users/${userId}/playlists`;
+  const authorizationCode = `Bearer ${localStorage.getItem("access_token")}`;
+  console.log("authorizationCode", authorizationCode);
+  const data = {
+    name: 'New Playlist',
+    description: "Made for you by Song Sensei",
+    public: false
+  };
+
+  await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": authorizationCode,
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => {
+      console.log("response", response);
+      console.log("response.json", response.json);
+      return response.json();
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
+
 const SubmitRequest = () => {
   const [userInput, setUserInput] = useState("");
   const [result, setResult] = useState();
@@ -98,6 +127,7 @@ const SubmitRequest = () => {
         return response.json();
       })
       .then((data) => {
+        console.log("setting access_token", data.access_token);
         localStorage.setItem("access_token", data.access_token);
       })
       .catch((error) => {
@@ -128,6 +158,7 @@ const SubmitRequest = () => {
       console.log("userId", userId);
 
       // Create playlist
+      await createPlaylist();
 
       // Parse songs from chat output
       var numberedItems = parseNumberedList(res.text);

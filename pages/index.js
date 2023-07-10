@@ -3,7 +3,7 @@ import styles from "./index.module.css";
 import React from "react";
 
 const redirectUri = "http://localhost:3000/chat";
-const scope = "playlist-modify-public";
+const scope = "playlist-modify-private";
 const authorizationEndpoint = "https://accounts.spotify.com/authorize";
 
 function generateRandomString(length) {
