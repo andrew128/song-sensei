@@ -67,62 +67,89 @@ async function createPlaylist(numberedItems) {
   const url = `https://api.spotify.com/v1/users/${userId}/playlists`;
   const authorizationCode = `Bearer ${localStorage.getItem("access_token")}`;
   const data = {
-    name: 'New Playlist',
+    name: "New Playlist",
     description: "Made for you by Song Sensei",
-    public: false
+    public: false,
   };
 
   await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": authorizationCode,
+      Authorization: authorizationCode,
     },
     body: JSON.stringify(data),
   })
     .then((response) => {
-        if (!response.ok) {
-          throw new Error("HTTP status " + response.status);
-        }
-        return response.json();
-      })
-    .then((data) => {
-      console.log("data", data);
-
-      const playlistId = data.id;
-
-      // Find songs and add them to the playlist
-      for (let i = 0; i < numberedItems.length; i++) {
-        console.log([i, numberedItems[i]]);
+      if (!response.ok) {
+        throw new Error("HTTP status " + response.status);
       }
+      return response.json();
+    })
+    .then((data) => {
+      return data.id;
     })
     .catch((error) => {
       console.error("Error:", error);
     });
 }
 
-async function findSongAndAddToPlaylist(item) {
-  const apiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(item)}&type=track`;
+// async function addTrackToPlaylist(trackUri, playlistId) {
+//   const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+//   const authorizationCode = `Bearer ${localStorage.getItem("access_token")}`;
+//   const data = {
+//     name: "New Playlist",
+//     description: "Made for you by Song Sensei",
+//     public: false,
+//   };
+
+//   await fetch(url, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: authorizationCode,
+//     },
+//     body: JSON.stringify(data),
+//   })
+//     .then((response) => {
+//       if (!response.ok) {
+//         throw new Error("HTTP status " + response.status);
+//       }
+//       return response.json();
+//     })
+//     .then((data) => {
+//       return data.id;
+//     })
+//     .catch((error) => {
+//       console.error("Error:", error);
+//     });
+// }
+
+async function findSongAndAddToPlaylist(item, playlistId) {
+  const apiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+    item
+  )}&type=track`;
   const headers = {
-    'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
-    'Content-Type': 'application/json'
+    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+    "Content-Type": "application/json",
   };
 
   try {
     const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: headers
+      method: "GET",
+      headers: headers,
     });
     const data = await response.json();
     if (response.ok) {
       const trackItems = data.tracks.items;
-      const trackUris = trackItems.map(track => track.uri);
-      // await addTracksToPlaylist(accessToken, trackUris);
+      const trackUris = trackItems.map((track) => track.uri);
+      console.log('trackUris', trackUris);
+      // await addTrackToPlaylist(trackUris[0], playlistId);
     } else {
-      console.log('Failed to search for songs:', data);
+      console.log("Failed to search for songs:", data);
     }
   } catch (error) {
-    console.log('Error searching for songs:', error);
+    console.log("Error searching for songs:", error);
   }
 }
 
@@ -193,7 +220,13 @@ const SubmitRequest = () => {
       console.log("numberedItems" + numberedItems);
 
       // Create playlist
-      await createPlaylist(numberedItems);
+      const playlistId = await createPlaylist(numberedItems);
+
+      // Find songs and add each to the playlist
+      for (let i = 0; i < numberedItems.length; i++) {
+        console.log([i, numberedItems[i]]);
+        await findSongAndAddToPlaylist(numberedItems[i], playlistId);
+      }
     } catch (error) {
       console.error(error);
       alert(error.message);
