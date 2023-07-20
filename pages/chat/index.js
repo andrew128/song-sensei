@@ -194,7 +194,7 @@ const SubmitRequest = () => {
       const res = await chat.call([
         new SystemChatMessage(
           "You are a helpful assistant that comes up with a playlist of songs." +
-            "You will give the playlist of songs in a numbered list." +
+            "You will give the playlist of unique songs in a numbered list." +
             "If you can't interpret a message as a song request you will truthfully say you do not know." +
             "When giving a suggested playlist return the songs in a numbered list."
         ),
