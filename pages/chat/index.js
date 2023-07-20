@@ -72,7 +72,7 @@ async function createPlaylist(numberedItems) {
     public: false,
   };
 
-  await fetch(url, {
+  return await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -94,36 +94,30 @@ async function createPlaylist(numberedItems) {
     });
 }
 
-// async function addTrackToPlaylist(trackUri, playlistId) {
-//   const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
-//   const authorizationCode = `Bearer ${localStorage.getItem("access_token")}`;
-//   const data = {
-//     name: "New Playlist",
-//     description: "Made for you by Song Sensei",
-//     public: false,
-//   };
+async function addTrackToPlaylist(trackUri, playlistId) {
+  const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
+  const authorizationCode = `Bearer ${localStorage.getItem("access_token")}`;
+  const data = {
+    uris: [trackUri],
+  };
 
-//   await fetch(url, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: authorizationCode,
-//     },
-//     body: JSON.stringify(data),
-//   })
-//     .then((response) => {
-//       if (!response.ok) {
-//         throw new Error("HTTP status " + response.status);
-//       }
-//       return response.json();
-//     })
-//     .then((data) => {
-//       return data.id;
-//     })
-//     .catch((error) => {
-//       console.error("Error:", error);
-//     });
-// }
+  await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authorizationCode,
+    },
+    body: JSON.stringify(data),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("HTTP status " + response.status);
+      }
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
 
 async function findSongAndAddToPlaylist(item, playlistId) {
   const apiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(
@@ -143,8 +137,7 @@ async function findSongAndAddToPlaylist(item, playlistId) {
     if (response.ok) {
       const trackItems = data.tracks.items;
       const trackUris = trackItems.map((track) => track.uri);
-      console.log('trackUris', trackUris);
-      // await addTrackToPlaylist(trackUris[0], playlistId);
+      await addTrackToPlaylist(trackUris[0], playlistId);
     } else {
       console.log("Failed to search for songs:", data);
     }
@@ -217,14 +210,12 @@ const SubmitRequest = () => {
 
       // Parse songs from chat output
       var numberedItems = parseNumberedList(res.text);
-      console.log("numberedItems" + numberedItems);
 
       // Create playlist
       const playlistId = await createPlaylist(numberedItems);
 
       // Find songs and add each to the playlist
       for (let i = 0; i < numberedItems.length; i++) {
-        console.log([i, numberedItems[i]]);
         await findSongAndAddToPlaylist(numberedItems[i], playlistId);
       }
     } catch (error) {
