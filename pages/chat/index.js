@@ -53,7 +53,6 @@ async function getUserId() {
         return response.json();
       })
       .then((data) => {
-        console.log("data", data);
         localStorage.setItem("userid", data.id);
         return data.id;
       })
@@ -63,11 +62,10 @@ async function getUserId() {
   }
 }
 
-async function createPlaylist() {
+async function createPlaylist(numberedItems) {
   const userId = localStorage.getItem("userid");
   const url = `https://api.spotify.com/v1/users/${userId}/playlists`;
   const authorizationCode = `Bearer ${localStorage.getItem("access_token")}`;
-  console.log("authorizationCode", authorizationCode);
   const data = {
     name: 'New Playlist',
     description: "Made for you by Song Sensei",
@@ -83,13 +81,49 @@ async function createPlaylist() {
     body: JSON.stringify(data),
   })
     .then((response) => {
-      console.log("response", response);
-      console.log("response.json", response.json);
-      return response.json();
+        if (!response.ok) {
+          throw new Error("HTTP status " + response.status);
+        }
+        return response.json();
+      })
+    .then((data) => {
+      console.log("data", data);
+
+      const playlistId = data.id;
+
+      // Find songs and add them to the playlist
+      for (let i = 0; i < numberedItems.length; i++) {
+        console.log([i, numberedItems[i]]);
+      }
     })
     .catch((error) => {
       console.error("Error:", error);
     });
+}
+
+async function findSongAndAddToPlaylist(item) {
+  const apiUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(item)}&type=track`;
+  const headers = {
+    'Authorization': `Bearer ${localStorage.getItem("access_token")}`,
+    'Content-Type': 'application/json'
+  };
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: headers
+    });
+    const data = await response.json();
+    if (response.ok) {
+      const trackItems = data.tracks.items;
+      const trackUris = trackItems.map(track => track.uri);
+      // await addTracksToPlaylist(accessToken, trackUris);
+    } else {
+      console.log('Failed to search for songs:', data);
+    }
+  } catch (error) {
+    console.log('Error searching for songs:', error);
+  }
 }
 
 const SubmitRequest = () => {
@@ -127,7 +161,6 @@ const SubmitRequest = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("setting access_token", data.access_token);
         localStorage.setItem("access_token", data.access_token);
       })
       .catch((error) => {
@@ -154,17 +187,13 @@ const SubmitRequest = () => {
 
       // Ensure user id is in local storage
       await getUserId();
-      const userId = localStorage.getItem("userid");
-      console.log("userId", userId);
-
-      // Create playlist
-      await createPlaylist();
 
       // Parse songs from chat output
       var numberedItems = parseNumberedList(res.text);
       console.log("numberedItems" + numberedItems);
 
-      // Find songs and add them to the playlist
+      // Create playlist
+      await createPlaylist(numberedItems);
     } catch (error) {
       console.error(error);
       alert(error.message);
