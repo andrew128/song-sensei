@@ -2,7 +2,7 @@ import Head from "next/head";
 import styles from "./index.module.css";
 import React from "react";
 
-const redirectUri = "http://localhost:3000/chat";
+const redirectUri = "https://song-sensei.vercel.app/chat";
 const scope = "playlist-modify-private";
 const authorizationEndpoint = "https://accounts.spotify.com/authorize";
 

@@ -5,7 +5,7 @@ import { HumanChatMessage, SystemChatMessage } from "langchain/schema";
 import React from "react";
 import styles from "./../index.module.css";
 
-const redirectUri = "http://localhost:3000/chat";
+const redirectUri = "https://song-sensei.vercel.app/chat";
 
 function getResponseCode() {
   const urlParams = new URLSearchParams(window.location.search);
